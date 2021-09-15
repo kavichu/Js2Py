@@ -9,7 +9,7 @@ import hashlib
 import random
 
 DID_INIT = False
-DIRNAME = tempfile.mkdtemp()
+DIRNAME = os.environ["NODE_MODULES"] if "NODE_MODULES" in os.environ.keys() else tempfile.mkdtemp()
 PY_NODE_MODULES_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'py_node_modules')
 
 
@@ -20,11 +20,15 @@ def _init():
     assert subprocess.call(
         'node -v', shell=True, cwd=DIRNAME
     ) == 0, 'You must have node installed! run: brew install node'
-    assert subprocess.call(
-        'cd %s;npm install babel-core babel-cli babel-preset-es2015 babel-polyfill babelify browserify browserify-shim'
-        % repr(DIRNAME),
-        shell=True,
-        cwd=DIRNAME) == 0, 'Could not link required node_modules'
+
+    # check if packages are installed
+    dependencies = ["babel-core", "babel-cli", "babel-preset-es2015", "babel-polyfill", "babelify", "browserify", "browserify-shim"]
+    if sum([x in os.listdir('node_modules') for x in dependencies]) != 7:
+        assert subprocess.call(
+            'cd %s;npm install babel-core babel-cli babel-preset-es2015 babel-polyfill babelify browserify browserify-shim'
+            % repr(DIRNAME),
+            shell=True,
+            cwd=DIRNAME) == 0, 'Could not link required node_modules'
     DID_INIT = True
 
 
